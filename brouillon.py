@@ -4,7 +4,6 @@ COLONNES = 7
 #nbr de COLONNES du plateau
 LIGNES = 6
 #nbr de LIGNES du plateau
-ALIGNEMENT = 4
 
 
 def afficher_plateau(plateau) :
@@ -54,31 +53,31 @@ def is_draw(plateau):
     return True
 
 
-def check_victoire_horizontale(char,i):
+def check_victoire_horizontale(char,i,alignement):
     points = 0
     for j in range(COLONNES):
         if plateau[i][j] == char :
             points += 1
-            if points == ALIGNEMENT :
+            if points >= alignement :
                 return True
         else :
-            points = 0
+            points = 0 
     return False
 
 
-def check_victoire_verticale(char,j):
+def check_victoire_verticale(char,j,alignement):
     points = 0
     for i in range(LIGNES):
         if plateau[i][j] == char :
             points += 1
-            if points == ALIGNEMENT :
+            if points >= alignement :
                 return True
         else :
-            points = 0
+            points = 0       
     return False
 
 
-def check_victoire_diagonale(char,l,c):
+def check_victoire_diagonale(char,l,c,alignement):
     points = 0
     patate = l
     tomate = c
@@ -98,7 +97,7 @@ def check_victoire_diagonale(char,l,c):
             break
         l -= 1
         c += 1
-    if points - 1 >= ALIGNEMENT :
+    if points -1 >= alignement :
         return True
     points = 0
     l = patate
@@ -119,44 +118,60 @@ def check_victoire_diagonale(char,l,c):
             break
         l += 1
         c += 1
-    if points - 1 >= ALIGNEMENT :
+    if points -1 >= alignement :
         return True
-
 #FIN FONCTION
 
-def check_victoire(jeton,char,player,ligne):
+
+def check_victoire(char,player,jeton,ligne,alignement):
     if is_draw(plateau) :
         print("Draw !")
         return True
-    if check_victoire_horizontale(char,ligne) :
+    if check_victoire_horizontale(char,ligne,alignement) :
         print(f"{player} : Wins !(hor)")
         return True
-    if check_victoire_verticale(char,jeton) :
-        print(f"{player} : Wins !(VER")
+    if check_victoire_verticale(char,jeton,alignement) :
+        print(f"{player} : Wins !(ver)")
         return True
-    if check_victoire_diagonale(char,ligne,jeton) :
+    if check_victoire_diagonale(char,ligne,jeton,alignement) :
         print(f"{player} : Wins !(diag)")
         return True
     #on regarde toutes les conditions de victoire en meme temps
 
 
 def demander_jeton_ia_random(plateau):
-    j = 0
     col = []
     for i in range(COLONNES):
         if plateau[0][i] == '" "':
             col.append(i)
     position = rd.choice(col)
-    while plateau[j][position] == '" "':
-        j += 1
-        ligne = j + 1
+    for j in range(0,LIGNES):
+        if plateau[j][position] == '" "' :
+            ligne = j
     return position , ligne
 
+
 def demander_jeton_ia(plateau):
-    return demander_jeton_ia_random(plateau)
+    for i in range(COLONNES):
+        if check_victoire_verticale('"O"',i,3) and plateau[0][i] == '" "': 
+            for j in range(0,LIGNES):
+                if plateau[j][i] != '" "' :
+                    ligne_jeton = j - 1
+            return i , ligne_jeton
+    for i in range(COLONNES):
+        if check_victoire_verticale('"X"',i,3) and plateau[0][i] == '" "': 
+            for j in range(0,LIGNES):
+                if plateau[j][i] != '" "' :
+                    ligne_jeton = j - 1
+            return i , ligne_jeton
+    else :
+        return demander_jeton_ia_random(plateau)
 
 
-#def _check_victoire_ia(plateau,colonne)
+def check_victoire_ia(plateau,colonne):
+    if check_victoire_horizontale('"O"',ligne_jeton2,3) :
+        
+        return colonne - 1
 
 
 
@@ -167,17 +182,16 @@ while True :
     jeton1 = demander_jeton("Player 1")
     while jeton1 == None :
         jeton1 = demander_jeton("Player 1")
-    colonne_pleine, ligne = placer_jeton(plateau, jeton1, 'X')
+    colonne_pleine, ligne_jeton = placer_jeton(plateau, jeton1, 'X')
     while colonne_pleine == True :
-        print("Clonne pleine.")
+        print("Colonne pleine.")
         jeton1 = demander_jeton("Player 1")
-        colonne_pleine, ligne = placer_jeton(plateau, jeton1, 'X')
-    afficher_plateau(plateau)
-    if check_victoire(jeton1,'X',"Player 1",ligne):
-        break
-    jeton2 , ligne2 = demander_jeton_ia(plateau)
+        colonne_pleine, ligne_jeton = placer_jeton(plateau, jeton1, 'X')
+    jeton2, ligne_jeton2 = demander_jeton_ia(plateau)
     placer_jeton(plateau, jeton2, 'O')
     afficher_plateau(plateau)
-    if check_victoire(jeton2,'O',"AI",ligne2):
+    if check_victoire('"X"',"Player 1",jeton1,ligne_jeton,4):
+        break
+    if check_victoire('"O"',"AI",jeton2,ligne_jeton2,4):
         break
     #on affiche le plateau de jeu
